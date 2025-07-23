@@ -20,7 +20,7 @@ pipeline {
             echo "Deliver phase"
         }
     }
-}
+    }
 
     post {
         always {
