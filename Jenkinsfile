@@ -7,30 +7,42 @@ pipeline {
         stage ('Build') {
             steps {
                 echo "Build phase"
+                powershell '''
+                cd calculator-app
+                python -m pip install -r requirements.txt
+                '''
             }
             
         }
         stage ('Test') {
             steps {
                 echo "Test phase"
+                powershell '''
+                cd calculator-app
+                python calculator.py --test 99 1
+                '''
             }
         }
         stage ('Deliver') {
             steps {
                 echo "Deliver phase"
+                powershell '''
+                cd calculator-app
+                Start-Process -NoNewWindow python -ArgumentList "calculator.py"
+                '''
         }
     }
     }
 
     post {
         always {
-            echo "This will always run"
-        }
-        success {
-            echo "This will run only if the pipeline is successful"
+            archiveArtifacts artifacts: 'calculator-app/*', allowEmptyArchive: true
         }
         failure {
-            echo "This will run only if the pipeline fails"
+            echo 'Build failed due to script or file issues.'
+        }
+        success {
+            echo 'Build completed successfully!'
         }
     }
 }
