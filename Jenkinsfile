@@ -31,7 +31,7 @@ pipeline {
                 Write-Output "Starting Flask server in the background..."
                 Start-Process python -ArgumentList "calculator.py" -WindowStyle Hidden -PassThru | Out-Null
                 Write-Output "Server started. Allowing 10 seconds for initialization..."
-                Start-Sleep -Seconds 10
+                Start-Sleep -Seconds 20
                 '''
             }
         }
