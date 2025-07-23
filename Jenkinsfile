@@ -9,7 +9,7 @@ pipeline {
                 echo "Build phase"
                 powershell '''
                 cd calculator-app
-                python -m pip install -r requirements.txt
+                python -m pip install --only-binary=:all: -r requirements.txt
                 '''
             }
             
