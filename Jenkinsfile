@@ -1,7 +1,7 @@
 pipeline {
     agent any
     triggers {
-        pollSCM('* 2 * * * *')
+        pollSCM('*/2 * * * *')
     }
     stages{
         stage ('Build') {
@@ -17,7 +17,7 @@ pipeline {
         }
         stage ('Deliver') {
             steps {
-            echo "Deliver phase"
+                echo "Deliver phase"
         }
     }
     }
