@@ -23,16 +23,20 @@ pipeline {
                 '''
             }
         }
-        stage ('Deliver') {
+        stage('Deliver') {
             steps {
-                echo "Deliver phase"
+                echo "deliver phase"
                 powershell '''
                 cd calculator-app
-                Start-Process -NoNewWindow python -ArgumentList "calculator.py"
+                Write-Output "Starting Flask server in the background..."
+                Start-Process python -ArgumentList "calculator.py" -WindowStyle Hidden -PassThru | Out-Null
+                Write-Output "Server started. Allowing 10 seconds for initialization..."
+                Start-Sleep -Seconds 10
                 '''
+            }
         }
     }
-    }
+
 
     post {
         always {
