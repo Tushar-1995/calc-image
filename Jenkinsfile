@@ -8,13 +8,13 @@ pipeline {
         pollSCM ('H/2 * * * *')
     }
     stages {
-        stage ( 'Build') {
+        stage ('Build') {
             steps {
                 sh '''
                 echo "building the calcultor image"
                 '''
             }   
-        }stage ( 'Test') {
+        }stage ('Test') {
             steps {
                 sh '''
                 cd calculator-app
@@ -22,7 +22,7 @@ pipeline {
                 '''
             }
             
-        }stage ( 'Deploy') {
+        }stage ('Deploy') {
             steps {
                 sh '''
                 cd calculator-app
