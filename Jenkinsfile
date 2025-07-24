@@ -14,7 +14,7 @@ pipeline {
                     echo "building the calcultor image"
                 '''
             }   
-        }stage ('Test') {
+        } stage ('Test') {
             steps {
                 sh '''
                     cd calculator-app
@@ -22,7 +22,7 @@ pipeline {
                 '''
             }
             
-        }stage ('Deploy') {
+        } stage ('Deploy') {
             steps {
                 sh '''
                     cd calculator-app
