@@ -19,7 +19,7 @@ pipeline {
             steps {
                 sh '''
                     cd calculator-app
-                    python3 calculator.py
+                    python calculator.py
                 '''
             }
             
@@ -29,7 +29,7 @@ pipeline {
                 sh '''
                     cd calculator-app
                     echo "starting flask server in the container"
-                    python3 calulator.py &
+                    python calulator.py &
                     echo "waiting for server to initialize"
                     sleep 20
                 '''
