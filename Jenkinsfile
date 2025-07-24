@@ -33,7 +33,7 @@ pipeline {
                 '''
             }
         }
-    }post {
+    } post {
         always {
             archiveArtifacts artifacts: 'calculator-app/*', allowEmptyArchive: true
         }
