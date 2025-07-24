@@ -1,44 +1,39 @@
 pipeline {
-    agent any
-    triggers {
-        pollSCM('*/2 * * * *')
+    agent {
+        docker{
+            image 'calculator-app:latest'
+        }
     }
-    stages{
-        stage ('Build') {
+    triggers {
+        pollSCM ('H/2 * * * *')
+    }
+    stages {
+        stage ( 'Build') {
             steps {
-                echo "Build phase"
-                powershell '''
+                sh '''
+                echo "building the calcultor image"
+                '''
+            }   
+        }stage ( 'Test') {
+            steps {
+                sh '''
                 cd calculator-app
-                python -m pip install --only-binary=:all: -r requirements.txt
+                python3 calculator.py
                 '''
             }
             
-        }
-        stage ('Test') {
+        }stage ( 'Deploy') {
             steps {
-                echo "Test phase"
-                powershell '''
+                sh '''
                 cd calculator-app
-                python calculator.py --test 99 1
+                echo "starting flask server in the container"
+                python3 calulator.py &
+                echo "waiting for server to initialize"
+                sleep 20
                 '''
             }
         }
-        stage('Deliver') {
-            steps {
-                echo "deliver phase"
-                powershell '''
-                cd calculator-app
-                Write-Output "Starting Flask server in the background..."
-                Start-Process python -ArgumentList "calculator.py" -WindowStyle Hidden -PassThru | Out-Null
-                Write-Output "Server started. Allowing 10 seconds for initialization..."
-                Start-Sleep -Seconds 20
-                '''
-            }
-        }
-    }
-
-
-    post {
+    }post {
         always {
             archiveArtifacts artifacts: 'calculator-app/*', allowEmptyArchive: true
         }
