@@ -34,7 +34,7 @@ pipeline {
                     sh '''
                         set -x
                         echo "Starting Flask server in a detached Docker container on the host"
-                        /c/Program\ Files/Docker/Docker/resources/bin/docker.exe run -d -p 5000:5000 --name calculator-server calculator-app:latest
+                        c:/ProgramFiles/Docker/Docker/resources/bin/docker.exe run -d -p 5000:5000 --name calculator-server calculator-app:latest
                         echo "Waiting for server to initialize"
                         sleep 20
                     '''
