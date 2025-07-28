@@ -2,7 +2,7 @@ pipeline {
     agent {
         dockerContainer {
             image 'calculator-app:latest'
-            args '--entrypoint=/bin/sh'  // Force shell entrypoint for debugging
+            // Removed 'args' since it's not supported
         }
     }
     triggers {
@@ -14,7 +14,6 @@ pipeline {
                 sh '''
                     set -x
                     echo "Building the calculator image"
-                    # Rebuild the image locally (adjust path if needed)
                     cd calculator-app && docker build -t calculator-app:latest .
                 '''
             }
