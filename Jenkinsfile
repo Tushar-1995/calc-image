@@ -2,79 +2,49 @@ pipeline {
     agent {
         dockerContainer {
             image 'calculator-app:latest'
-            // Consider adding a 'pull: true' here if you want to ensure the latest image
-            // Always ensure the image is built and pushed to a registry before using it here.
+            args '--entrypoint=/bin/sh'  // Force shell entrypoint for debugging
         }
     }
     triggers {
-        pollSCM ('H/2 * * * *')
+        pollSCM('H/2 * * * *')  // Poll SCM every 2 minutes
     }
     stages {
-        stage ('Build') {
+        stage('Build') {
             steps {
                 sh '''
-                    echo "building the calculator image"
-                    // Add actual build steps for your Python app here, e.g.:
-                    // pip install -r requirements.txt
-                    // python setup.py build
-                    // If you build a NEW Docker image here, ensure it's tagged and used appropriately.
-                    // For example, if 'calculator-app:latest' is built here, it should be done in this stage.
+                    set -x
+                    echo "Building the calculator image"
+                    # Rebuild the image locally (adjust path if needed)
+                    cd calculator-app && docker build -t calculator-app:latest .
                 '''
             }
         }
-        stage ('Test') {
+        stage('Test') {
             steps {
                 sh '''
+                    set -x
                     cd calculator-app
-                    // Assuming this runs actual tests and exits, not starts a server.
-                    python calculator.py
-                    // Consider using pytest or unittest for structured tests:
-                    // python -m pytest
+                    python calculator.py --test 5 3
                 '''
             }
         }
-        stage ('Deploy') {
+        stage('Deploy') {
             steps {
-                sh '''
-                    cd calculator-app
-                    echo "Starting Flask server in background for TEMPORARY check/test if needed."
-                    # Use 'nohup' and capture PID if you want it to truly run in detached mode *within the container lifecycle*
-                    # BUT THIS IS STILL NOT FOR LONG-TERM DEPLOYMENT.
-                    # For a real deployment, you would push this image to a registry
-                    # and then deploy it to a separate environment (e.g., Kubernetes, Azure App Service)
-
-                    # Option A: If you need to start it *briefly* for an integration test within the container
-                    # and then kill it:
-                    python calculator.py &
-                    SERVER_PID=$!
-                    echo "Server started with PID: $SERVER_PID"
-                    echo "Waiting for server to initialize..."
-                    sleep 20 # Give it time to start up
-
-                    # Add actual test commands here against localhost:
-                    # Example: curl -f http://localhost:5000/some_endpoint || { echo "Server test failed"; exit 1; }
-
-                    echo "Stopping the temporary Flask server..."
-                    kill $SERVER_PID || true # '|| true' makes sure the step doesn't fail if the process already died
-                    echo "Server stopped."
-
-                    # Option B: (Recommended for actual deployment)
-                    # Instead of running the server here, you would typically:
-                    # 1. Build and tag the Docker image (if not done in 'Build' stage)
-                    # docker build -t your_repo/calculator-app:$BUILD_NUMBER .
-                    # 2. Push the Docker image to a registry (e.g., Docker Hub, Azure Container Registry)
-                    # docker push your_repo/calculator-app:$BUILD_NUMBER
-                    # 3. Deploy the image to your target environment (e.g., Kubernetes cluster, Azure App Service)
-                    # kubectl apply -f kubernetes_deployment.yaml
-                    # az webapp deploy ...
-                '''
+                timeout(time: 2, unit: 'MINUTES') {
+                    sh '''
+                        set -x
+                        echo "Starting Flask server in a detached Docker container on the host"
+                        /c/Program\ Files/Docker/Docker/resources/bin/docker.exe run -d -p 5000:5000 --name calculator-server calculator-app:latest
+                        echo "Waiting for server to initialize"
+                        sleep 20
+                    '''
+                }
             }
         }
     }
     post {
         always {
-            // Ensure the artifact path is correct relative to the workspace.
-            // If calculator-app is the root of your repo clone in the workspace:
+            sh '/c/Program\ Files/Docker/Docker/resources/bin/docker.exe stop calculator-server || true && /c/Program\ Files/Docker/Docker/resources/bin/docker.exe rm calculator-server || true'
             archiveArtifacts artifacts: 'calculator-app/*', allowEmptyArchive: true
         }
         failure {
